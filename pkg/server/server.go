@@ -28,7 +28,7 @@ func New(addr string) *Server {
 	mux.Handle(pat.Post("/certificates"), handlers.Handler{S: memStore, H: handlers.PostCertHandler})
 	mux.Handle(pat.Patch("/certificates/:id"), handlers.Handler{S: memStore, H: handlers.PatchCertHandler})
 	mux.Handle(pat.Delete("/certificates/:id"), handlers.Handler{S: memStore, H: handlers.DeleteCertHandler})
-	mux.HandleFunc(pat.Get("/users/:userId/certificates"), handlers.ListUserCertsHandler)
+	mux.Handle(pat.Get("/users/:userId/certificates"), handlers.Handler{S: memStore, H: handlers.ListUserCertsHandler})
 	mux.HandleFunc(pat.Post("/users/:userId/transfers"), handlers.PostTransferHandler)
 	mux.HandleFunc(pat.Patch("/users/:userId/transfers"), handlers.PatchTransferHandler)
 

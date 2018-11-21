@@ -59,3 +59,16 @@ func (m *memStore) Delete(id string) error {
 
 	return nil
 }
+
+// Delete modifies an existing certificate in the MemStore
+func (m *memStore) Get(ownerID string) ([]Certificate, error) {
+	certs := []Certificate{}
+
+	for _, v := range m.Certs {
+		if v.OwnerID == ownerID {
+			certs = append(certs, v)
+		}
+	}
+
+	return certs, nil
+}

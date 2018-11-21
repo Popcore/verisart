@@ -100,3 +100,44 @@ func TestDeleteCert(t *testing.T) {
 	err = mc.Delete("i-dont-exists")
 	assert.NotNil(t, err)
 }
+
+func TestGetCert(t *testing.T) {
+	mockCert1 := Certificate{
+		ID:        "id1",
+		Title:     "the-title1",
+		CreatedAt: time.Now(),
+		OwnerID:   "owner-id1",
+		Year:      2018,
+		Note:      "some-notes",
+	}
+
+	mockCert2 := Certificate{
+		ID:        "id2",
+		Title:     "the-title2",
+		CreatedAt: time.Now(),
+		OwnerID:   "owner-id1",
+		Year:      2018,
+		Note:      "some-notes",
+	}
+
+	mockCert3 := Certificate{
+		ID:        "id3",
+		Title:     "title3",
+		CreatedAt: time.Now(),
+		OwnerID:   "owner-id2",
+		Year:      2018,
+		Note:      "some-notes",
+	}
+
+	mc := memStore{
+		Certs: map[string]Certificate{
+			"id1": mockCert1,
+			"id2": mockCert2,
+			"id3": mockCert3,
+		},
+	}
+
+	certs, err := mc.Get("owner-id1")
+	assert.Nil(t, err)
+	assert.Len(t, certs, 2)
+}

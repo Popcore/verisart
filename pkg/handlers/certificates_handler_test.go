@@ -187,7 +187,7 @@ func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	mux.ServeHTTP(recorder, req)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
 }
 func TestDeleteCertHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
@@ -200,7 +200,7 @@ func TestDeleteCertHandlerOK(t *testing.T) {
 
 	mux.Handle(pat.Delete("/certificates/:id"), Handler{S: memStore, H: DeleteCertHandler})
 
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("/certificates/%s", toDelete.ID), strings.NewReader(""))
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("/certificates/%s", toDelete.ID), nil)
 	req.Header.Set("Authorization", "Bearer abc")
 
 	assert.Nil(t, err)
@@ -217,12 +217,45 @@ func TestDeleteCertHandlerBadRequest(t *testing.T) {
 
 	mux.Handle(pat.Delete("/certificates/:id"), Handler{S: memStore, H: DeleteCertHandler})
 
-	req, err := http.NewRequest("DELETE", "/certificates/i-dont'exist", strings.NewReader(""))
+	req, err := http.NewRequest("DELETE", "/certificates/i-dont'exist", nil)
 
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
 
 	mux.ServeHTTP(recorder, req)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+}
+
+func TestListUserCertsHandlerOK(t *testing.T) {
+	mux := goji.NewMux()
+	memStore := cert.NewMemStore()
+	_, err := memStore.Create(cert.Certificate{
+		Title:   "my cert1",
+		OwnerID: "owner1",
+		Year:    2018,
+	})
+
+	_, err = memStore.Create(cert.Certificate{
+		Title:   "my cert2",
+		OwnerID: "owner1",
+		Year:    2018,
+	})
+
+	_, err = memStore.Create(cert.Certificate{
+		Title:   "my cert2",
+		OwnerID: "owner2",
+		Year:    2018,
+	})
+	assert.Nil(t, err)
+
+	mux.Handle(pat.Get("/users/:userId/certificates"), Handler{S: memStore, H: ListUserCertsHandler})
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/users/%s/certificates", "owner1"), nil)
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	mux.ServeHTTP(recorder, req)
+	assert.Equal(t, http.StatusOK, recorder.Code)
 }

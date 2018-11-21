@@ -36,4 +36,8 @@ type Storer interface {
 	// Delete removes a Certificate from the store. It returns an error if
 	// the operation could not be completed.
 	Delete(id string) error
+
+	// Get returns the certificates belonging to the user identified by
+	// the ownerID.
+	Get(ownerID string) ([]Certificate, error)
 }
