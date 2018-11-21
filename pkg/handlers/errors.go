@@ -8,7 +8,7 @@ import (
 // JSONError is the type used to render JSON errors to clients
 type JSONError struct {
 	Message string `json:"error"`
-	Code    int    `json:"httStatus"`
+	Code    int    `json:"httpStatus"`
 }
 
 // renderInternalError is the fail safe response returned when we are dealing

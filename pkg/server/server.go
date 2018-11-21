@@ -36,7 +36,7 @@ func New(addr string) *Server {
 	c := cors.New(
 		cors.Options{
 			AllowedOrigins: []string{"*"},
-			AllowedMethods: []string{"GET", "POST", "PUT"},
+			AllowedMethods: []string{"GET", "POST", "PATCH"},
 			AllowedHeaders: []string{"Authorization", "Content-Type"},
 		},
 	)

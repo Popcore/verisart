@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"goji.io/pat"
 
@@ -22,18 +23,33 @@ func PostCertHandler(store cert.Storer, w http.ResponseWriter, r *http.Request) 
 	err := decoder.Decode(&newCert)
 	if err != nil {
 		renderJSONError(http.StatusBadRequest, "invalid json payload", w)
+		return
 	}
+
+	// get user from header.
+	// Here we simply read it from the Authorization header.
+	userID := r.Header.Get("Authorization")
+	userID = strings.TrimPrefix(userID, "Bearer ")
+
+	if userID == "" {
+		renderJSONError(http.StatusUnprocessableEntity, "user must be set in the Authorization header", w)
+		return
+	}
+
+	newCert.OwnerID = userID
 
 	// update storer
 	savedCert, err := store.Create(newCert)
 	if err != nil {
 		renderJSONError(http.StatusBadRequest, err.Error(), w)
+		return
 	}
 
 	// return new cert
 	resp, err := json.Marshal(savedCert)
 	if err != nil {
 		renderInternalError(err, w)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -41,6 +57,7 @@ func PostCertHandler(store cert.Storer, w http.ResponseWriter, r *http.Request) 
 	_, err = w.Write(resp)
 	if err != nil {
 		renderInternalError(err, w)
+		return
 	}
 }
 

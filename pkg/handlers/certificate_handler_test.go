@@ -51,10 +51,16 @@ func TestPostCertHandlerInvalidJSON(t *testing.T) {
 
 	assert.Nil(t, err)
 
+	expected := `{
+	  "error": "invalid json payload",
+	  "httpStatus": 400
+	}`
+
 	recorder := httptest.NewRecorder()
 
 	mux.ServeHTTP(recorder, req)
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	assert.JSONEq(t, expected, recorder.Body.String())
 }
 
 func TestPostCertHandlerInvalidCert(t *testing.T) {
@@ -78,6 +84,33 @@ func TestPostCertHandlerInvalidCert(t *testing.T) {
 
 	mux.ServeHTTP(recorder, req)
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+}
+
+func TestPostCertHandlerErrorNoUser(t *testing.T) {
+	mux := goji.NewMux()
+	memStore := cert.NewMemStore()
+	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
+
+	input := `{
+    "title": "my-thing",
+    "year": 1998,
+    "note": "some notes"
+	}`
+
+	expected := `{
+	  "error": "user must be set in the Authorization header",
+	  "httpStatus": 422
+	}
+	`
+
+	req, err := http.NewRequest("POST", "/certificates", strings.NewReader(input))
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	mux.ServeHTTP(recorder, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
+	assert.JSONEq(t, expected, recorder.Body.String())
 }
 
 func TestPatchCertHandlerOK(t *testing.T) {
@@ -156,7 +189,6 @@ func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 	mux.ServeHTTP(recorder, req)
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }
-
 func TestDeleteCertHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
 	memStore := cert.NewMemStore()
@@ -186,7 +218,6 @@ func TestDeleteCertHandlerBadRequest(t *testing.T) {
 	mux.Handle(pat.Delete("/certificates/:id"), Handler{S: memStore, H: DeleteCertHandler})
 
 	req, err := http.NewRequest("DELETE", "/certificates/i-dont'exist", strings.NewReader(""))
-	req.Header.Set("Authorization", "Bearer abc")
 
 	assert.Nil(t, err)
 
