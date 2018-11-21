@@ -4,13 +4,10 @@ import (
 	"time"
 )
 
-// CertID is a type alias representing certificates IDs
-type CertID string
-
 // Certificate is a type that represents an artwork certificate.
 // It contains information about its name, provenance, status etc.
 type Certificate struct {
-	ID        CertID    `json:"id"`
+	ID        string    `json:"id"`
 	Title     string    `json:"title"`
 	CreatedAt time.Time `json:"createdAt"`
 	OwnerID   string    `json:"ownerId"`
@@ -34,9 +31,9 @@ type Storer interface {
 
 	// Update modifies an existing Certificate. It returns the updated certificate
 	// or an error if anything goes wrong.
-	Update(c Certificate) (*Certificate, error)
+	Update(id string, c Certificate) (*Certificate, error)
 
 	// Delete removes a Certificate from the store. It returns an error if
 	// the operation could not be completed.
-	Delete(id CertID) error
+	Delete(id string) error
 }

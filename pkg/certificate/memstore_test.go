@@ -9,33 +9,31 @@ import (
 
 func TestCreateNewCert(t *testing.T) {
 	mc := memStore{
-		Certs: map[CertID]Certificate{},
+		Certs: map[string]Certificate{},
 	}
 
-	mockTime := time.Now()
 	mockCert := Certificate{
-		ID:        "the-id",
-		Title:     "the-title",
-		CreatedAt: mockTime,
-		OwnerID:   "the-owner-id",
-		Year:      2018,
-		Note:      "some-notes",
+		Title:   "the-title",
+		OwnerID: "the-owner-id",
+		Year:    2018,
+		Note:    "some-notes",
 	}
 
 	got, err := mc.Create(mockCert)
 	assert.Nil(t, err)
 
 	// sanity check
-	assert.Equal(t, got.ID, CertID("the-id"))
+	assert.NotNil(t, got.ID)
 	assert.Equal(t, got.Title, "the-title")
-	assert.Equal(t, got.CreatedAt, mockTime)
+	assert.NotNil(t, got.CreatedAt)
 	assert.Equal(t, got.OwnerID, "the-owner-id")
 	assert.Equal(t, got.Year, 2018)
 	assert.Equal(t, got.Note, "some-notes")
 	assert.Nil(t, got.Transfer)
 
-	// attempting to create the same certificate should return an error
-	_, err = mc.Create(mockCert)
+	// attempting to create the same certificate - or a certificate
+	// with an id - should return an error
+	_, err = mc.Create(*got)
 	assert.NotNil(t, err)
 	assert.Len(t, mc.Certs, 1)
 }
@@ -51,7 +49,7 @@ func TestUpdateCert(t *testing.T) {
 	}
 
 	mc := memStore{
-		Certs: map[CertID]Certificate{
+		Certs: map[string]Certificate{
 			"the-id": mockCert,
 		},
 	}
@@ -62,7 +60,7 @@ func TestUpdateCert(t *testing.T) {
 		Status: "in-progress",
 	}
 
-	got, err := mc.Update(mockCert)
+	got, err := mc.Update("the-id", mockCert)
 	assert.Nil(t, err)
 	assert.Equal(t, got.OwnerID, "new-owner-id")
 	assert.Equal(t, got.OwnerID, mockCert.OwnerID)
@@ -73,8 +71,7 @@ func TestUpdateCert(t *testing.T) {
 	assert.Equal(t, got.Transfer, mockCert.Transfer)
 
 	// attempting to update a non existing certificate should return an error
-	mockCert.ID = "i-dont-exists"
-	got, err = mc.Update(mockCert)
+	got, err = mc.Update("i-dont-exists", mockCert)
 	assert.Nil(t, got)
 	assert.NotNil(t, err)
 }
@@ -90,7 +87,7 @@ func TestDeleteCert(t *testing.T) {
 	}
 
 	mc := memStore{
-		Certs: map[CertID]Certificate{
+		Certs: map[string]Certificate{
 			"the-id": mockCert,
 		},
 	}

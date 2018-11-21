@@ -8,7 +8,6 @@ import (
 	"goji.io"
 	"goji.io/pat"
 
-	"github.com/popcore/verisart_exercise/pkg/certificate"
 	cert "github.com/popcore/verisart_exercise/pkg/certificate"
 	"github.com/popcore/verisart_exercise/pkg/handlers"
 )
@@ -16,21 +15,22 @@ import (
 // Server is a custom type used to group server configuration,
 // services and functionalities
 type Server struct {
-	Address   string
-	Mux       *goji.Mux
-	CertStore certificate.Storer
+	Address string
+	Mux     *goji.Mux
 }
 
 // New returns a server instance than can be used to handle
 // http requests.
 func New(addr string) *Server {
+
+	memStore := cert.NewMemStore()
 	mux := goji.NewMux()
-	mux.HandleFunc(pat.Post("/certificates:id"), handlers.GetHome)
-	mux.HandleFunc(pat.Patch("/certificates:id"), handlers.GetHome)
-	mux.HandleFunc(pat.Delete("/certificates:id"), handlers.GetHome)
-	mux.HandleFunc(pat.Get("/users/:userId/certificates"), handlers.GetHome)
-	mux.HandleFunc(pat.Post("/users/:userId/transfers"), handlers.GetHome)
-	mux.HandleFunc(pat.Patch("/users/:userId/transfers"), handlers.GetHome)
+	mux.Handle(pat.Post("/certificates"), handlers.Handler{S: memStore, H: handlers.PostCertHandler})
+	mux.Handle(pat.Patch("/certificates/:id"), handlers.Handler{S: memStore, H: handlers.PatchCertHandler})
+	mux.Handle(pat.Delete("/certificates/:id"), handlers.Handler{S: memStore, H: handlers.DeleteCertHandler})
+	mux.HandleFunc(pat.Get("/users/:userId/certificates"), handlers.ListUserCertsHandler)
+	mux.HandleFunc(pat.Post("/users/:userId/transfers"), handlers.PostTransferHandler)
+	mux.HandleFunc(pat.Patch("/users/:userId/transfers"), handlers.PatchTransferHandler)
 
 	// set up cors
 	c := cors.New(
@@ -43,9 +43,8 @@ func New(addr string) *Server {
 	mux.Use(c.Handler)
 
 	return &Server{
-		Address:   addr,
-		Mux:       mux,
-		CertStore: cert.NewMemStore(),
+		Address: addr,
+		Mux:     mux,
 	}
 }
 

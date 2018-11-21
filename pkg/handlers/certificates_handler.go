@@ -1,11 +1,97 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
+
+	"goji.io/pat"
+
+	cert "github.com/popcore/verisart_exercise/pkg/certificate"
 )
 
-// GetHome returns
-func GetHome(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello server")
+// PostCertHandler accept requests dealing with the creation of
+// new certificates
+func PostCertHandler(store cert.Storer, w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+
+	// parse payload
+	decoder := json.NewDecoder(r.Body)
+	newCert := cert.Certificate{}
+
+	err := decoder.Decode(&newCert)
+	if err != nil {
+		renderJSONError(http.StatusBadRequest, "invalid json payload", w)
+	}
+
+	// update storer
+	savedCert, err := store.Create(newCert)
+	if err != nil {
+		renderJSONError(http.StatusBadRequest, err.Error(), w)
+	}
+
+	// return new cert
+	resp, err := json.Marshal(savedCert)
+	if err != nil {
+		renderInternalError(err, w)
+	}
+
+	w.WriteHeader(http.StatusCreated)
+
+	_, err = w.Write(resp)
+	if err != nil {
+		renderInternalError(err, w)
+	}
+}
+
+// PatchCertHandler accept requests dealing with the updating of
+// exisitng certificates
+func PatchCertHandler(store cert.Storer, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	certID := pat.Param(r, "id")
+
+	// parse payload
+	decoder := json.NewDecoder(r.Body)
+	toUpdate := cert.Certificate{}
+
+	err := decoder.Decode(&toUpdate)
+	if err != nil {
+		renderJSONError(http.StatusBadRequest, "invalid json payload", w)
+	}
+
+	// update storer
+	updatedCert, err := store.Update(certID, toUpdate)
+	if err != nil {
+		renderJSONError(http.StatusBadRequest, err.Error(), w)
+	}
+
+	// return new cert
+	resp, err := json.Marshal(updatedCert)
+	if err != nil {
+		renderInternalError(err, w)
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	_, err = w.Write(resp)
+	if err != nil {
+		renderInternalError(err, w)
+	}
+}
+
+// DeleteCertHandler accept requests dealing with the removal of
+// exisitng certificates
+func DeleteCertHandler(store cert.Storer, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	certID := pat.Param(r, "id")
+
+	// update storer
+	err := store.Delete(certID)
+	if err != nil {
+		renderJSONError(http.StatusBadRequest, err.Error(), w)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
