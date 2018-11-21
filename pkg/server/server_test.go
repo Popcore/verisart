@@ -7,8 +7,6 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
-	t.Parallel()
-
 	port := ":1234"
 	s := New(port)
 
