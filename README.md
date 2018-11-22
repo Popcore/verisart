@@ -16,31 +16,28 @@ The application can be built and run with and without docker.
 
 ### Without Docker
 Requirements:
--[Golang](https://golang.org/dl/)
--[Make](https://www.gnu.org/software/make/manual/html_node/Introduction.html)
+- [Golang](https://golang.org/dl/)
+- [Make](https://www.gnu.org/software/make/manual/html_node/Introduction.html)
 
-the app can be build the app with the Make command
 ```
 make build
 ```
-This will generate an executable in the /build folder.
-
-and run with
+Wll generate an executable in the /build folder.
+The executable ca be run with
 ```
 ./build/verisart
 ```
 
-If using Makefiles is not an option building and running the app be achieved by
+If using Makefiles is not an option building and running the app can be achieved with
 ```
 go run main.go
 ```
-
-The above will start a new server on localhost at port `:9091`.
+This command will start a new server on localhost at port `:9091`.
 
 ### With Docker
 Requirements:
-[Docker > 17](https://docs.docker.com/v17.12/install/)
--[Make](https://www.gnu.org/software/make/manual/html_node/Introduction.html)
+- [Docker > 17](https://docs.docker.com/v17.12/install/)
+- [Make](https://www.gnu.org/software/make/manual/html_node/Introduction.html)
 
 the app can be built and run with a single command
 ```
@@ -52,15 +49,15 @@ If using Makefiles is not an option building and running the container can be ac
 docker build --tag verisart . && docker run --rm -d --name verisart_app -p 9091:9091 verisart latest
 ```
 
-The above will generate a docker image and container available at http://0.0.0.0:9091
+This commands will generate a docker image and start a container available at http://0.0.0.0:9091
 
 ## Quick Start
-To quickly see and test how the app works and what functionalities it exposes follow the steps below.
-For simplicity the examples use `curl`, but the same result can be achieved using similar tools.
+The examples below can be followed to quickly see and test how the app works and what functionalities it exposes.
+For simplicity the code samples use `curl` for issuing HTTP requests, but the same result can be achieved using similar tools.
 
 0 - Ensure the application is up and running.
 
-1- The first thing to do in order to consume the API is to generate users.
+1- The first thing to do in order to consume the API is to generate users
 ```
 # user 1
 curl -X POST -d '{"email": "user1@email.com", "name": "joe"}' http://0.0.0.0:9091/users
@@ -113,7 +110,7 @@ curl http://0.0.0.0:9091/users/<the-user-email-address>/certificates
 where `<the-user-email-address>` should be replaced by either `user1@email.com` or `user2@email.com`,
 
 
-4 - A certificate transaction from Joe to Mary can be created with
+4 - A new certificate transaction from Joe to Mary can be created with
 ```
 curl -X POST -d '{"email": "user2@email.com"}' http://0.0.0.0:9091/certificates/<certificate-id>/transfers
 ```
@@ -130,11 +127,10 @@ Where the `<certificate-id>` should be replaced with one of the certificate Ids 
 If no error was returned we can verify that the certificate was successfully transfered by repeting step 2. Joe should now have 0 certificates while Mary should have 2.
 
 ## API Endpoints
-The API returns and expects JSON payloads.
-It is the responsiblity of the API consumers to set their request content type accordingly.
+The API expected content type is JSON.
 
 ### Creating certificates
-certificates can be created by existing users.
+certificates can be created by existing users only.
 Requsts must include a `X-User-Email` header containing the certificate owner email address.
 
 Method: POST
@@ -149,11 +145,11 @@ A request payload looks like:
 }
 ```
 
-On success the application returns the cetificate that was created
+On success the application returns the cetificate that was created.
 In case of an error the application will return an error containg the http status code and a message.
 
 ### Updating certificates
-Existing certificates can be updated by specifying the fields that require updating.
+Existing certificates can be updated by specifying the fields that needs to be modified.
 Note that attempting to update a transaction object will result in an error as transaction can only updated via the a certificate transfer.
 
 Method: PATCH
@@ -174,10 +170,12 @@ curl -X PATCH -d '{"title" : "my new shiny title", "year": 2018, "notes": "new n
 
 ```
 
-Attempting to directly update the certificate ownerID or a transaction status will produce an error. Certificates ownershipcan only be updated using transactions.
+Certificate IDs and their time of creation cannot be modified directly.
+
+Attempting to directly update the certificate ownerID or a transaction status will produce an error. Certificates ownership can only be updated using transactions.
 
 ### Deleting certificates
-Existing certificates can be also deleted. Once deleted certificates cannot be recovered.
+Existing certificates can be also removed. Once deleted a certificate cannot be recovered.
 
 Method: DELETE
 Endpoint: /certificates/<the-certificate-id>
@@ -193,9 +191,6 @@ curl -X DELETE http://0.0.0.0:9091/certificates/<the-certificate-id>
 Method: POST
 Endpoint: /users
 
-On success the application returns the cetificate that was created
-In case of an error the application will return an error containg the http status code and a message.
-
 A request payload looks like:
 ```json
 {
@@ -204,7 +199,8 @@ A request payload looks like:
 }
 ```
 
-The application will reponnd with a JSON bject representing the user that was generated.
+On success the application returns the user that was created.
+In case of an error the application will return an error containing the http status code and a message.
 
 
 ### Listing certificates for a user
@@ -235,7 +231,7 @@ A request payload looks like:
 }
 ```
 
-Currently only the email address must be specfied as the application will automatically set the transaction status to "pending".
+Currently only the email address can be specified as the application will automatically set the transaction status to "pending".
 
 The application will reponnd with a JSON object containing the certificates that belong to a user.
 Errors will be returned when trying the create a new trasaction for a certificate that already has a pending transaction.
