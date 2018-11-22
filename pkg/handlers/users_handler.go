@@ -8,6 +8,7 @@ import (
 
 	cert "github.com/popcore/verisart_exercise/pkg/certificate"
 	store "github.com/popcore/verisart_exercise/pkg/store"
+	users "github.com/popcore/verisart_exercise/pkg/users"
 )
 
 // ListUserCertsHandler accepts requests dealing with the removal of
@@ -40,5 +41,35 @@ func ListUserCertsHandler(s store.Storer, w http.ResponseWriter, r *http.Request
 // NewUserHandler accepts requests dealing with the creation of
 // new users.
 func NewUserHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *HTTPError {
+	// parse payload
+	decoder := json.NewDecoder(r.Body)
+	newUser := users.User{}
+
+	err := decoder.Decode(&newUser)
+	if err != nil {
+		return newHTTPError(http.StatusBadRequest, "invalid json payload")
+	}
+
+	if newUser.Email == "" || newUser.Name == "" {
+		return newHTTPError(http.StatusUnprocessableEntity, "user email and name must be set in the request body")
+	}
+
+	resp, err := s.NewUser(newUser.Email, newUser.Name)
+	if err != nil {
+		return newHTTPError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		return newHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	w.WriteHeader(http.StatusCreated)
+
+	_, err = w.Write(jsonResp)
+	if err != nil {
+		return newHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
 	return nil
 }
