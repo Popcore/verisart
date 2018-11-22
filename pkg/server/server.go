@@ -8,8 +8,8 @@ import (
 	"goji.io"
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
 	"github.com/popcore/verisart_exercise/pkg/handlers"
+	store "github.com/popcore/verisart_exercise/pkg/store"
 )
 
 // Server is a custom type used to group server configuration,
@@ -23,16 +23,16 @@ type Server struct {
 // http requests.
 func New(addr string) *Server {
 
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 	mux := goji.NewMux()
 	mux.Handle(pat.Post("/certificates"), handlers.Handler{S: memStore, H: handlers.PostCertHandler})
 	mux.Handle(pat.Patch("/certificates/:id"), handlers.Handler{S: memStore, H: handlers.PatchCertHandler})
 	mux.Handle(pat.Delete("/certificates/:id"), handlers.Handler{S: memStore, H: handlers.DeleteCertHandler})
+	mux.Handle(pat.Post("/certificates/:id/transfers"), handlers.Handler{S: memStore, H: handlers.PostTransferHandler})
+	mux.Handle(pat.Patch("/certificates/:id/transfers"), handlers.Handler{S: memStore, H: handlers.PatchTransferHandler})
 	mux.Handle(pat.Get("/users/:userId/certificates"), handlers.Handler{S: memStore, H: handlers.ListUserCertsHandler})
-	mux.HandleFunc(pat.Post("/users/:userId/transfers"), handlers.PostTransferHandler)
-	mux.HandleFunc(pat.Patch("/users/:userId/transfers"), handlers.PatchTransferHandler)
-
-	// set up cors
+	mux.Handle(pat.Post("/users/"), handlers.Handler{S: memStore, H: handlers.NewUserHandler})
+	// define cors policies
 	c := cors.New(
 		cors.Options{
 			AllowedOrigins: []string{"*"},

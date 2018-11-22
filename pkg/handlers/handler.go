@@ -1,21 +1,48 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
+	store "github.com/popcore/verisart_exercise/pkg/store"
 )
 
-type handler func(s cert.Storer, w http.ResponseWriter, r *http.Request)
+type handler func(s store.Storer, w http.ResponseWriter, r *http.Request) *HTTPError
 
 // Handler responsible for handling http requests. It holds the actual function
 // that will be invoked as a request is receive and any other configuration
 // required by the handlers to perform the required actions.
 type Handler struct {
-	S cert.Storer
+	S store.Storer
 	H handler
 }
 
+// HTTPError is the error type returned by handlers when requests cannot
+// be successfully completed. It contains the error HTTP status code and
+// an error message.
+type HTTPError struct {
+	Code int    `json:"httpStatus"`
+	Msg  string `json:"error"`
+}
+
+func newHTTPError(code int, msg string) *HTTPError {
+	return &HTTPError{
+		Code: code,
+		Msg:  msg,
+	}
+}
+
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.H(h.S, w, r)
+	err := h.H(h.S, w, r)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(err.Code)
+
+		errResp, innerErr := json.Marshal(err)
+		if innerErr != nil {
+			http.Error(w, innerErr.Error(), http.StatusInternalServerError)
+		}
+
+		w.Write(errResp)
+	}
 }

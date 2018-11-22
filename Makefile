@@ -13,5 +13,19 @@ test:
 	@echo "==> running unit tests"
 	@mkdir -p $(ARTEFACT_DIR)
 	@echo 'mode: atomic' > $(ARTEFACT_DIR)/coverage.out
-	go test ./... -coverprofile=$(ARTEFACT_DIR)/coverage.tmp && tail -n +2 $(ARTEFACT_DIR)/coverage.tmp >> $(ARTEFACT_DIR)/coverage.out || exit;
-	go tool cover -html=$(ARTEFACT_DIR)/coverage.out -o $(ARTEFACT_DIR)/coverage.html
+	@go test ./... -coverprofile=$(ARTEFACT_DIR)/coverage.out
+	@go tool cover -html=$(ARTEFACT_DIR)/coverage.out -o $(ARTEFACT_DIR)/coverage.html
+
+.PHONY: docker_build
+docker_build:
+	@echo "==> builing docker image"
+ifdef tag
+	docker build --tag $(tag) .
+else
+	docker build --tag latest .
+endif
+
+.PHONY: docker_run
+docker_run: docker_build
+	@echo "==> builing image and running docker container"
+	docker run --rm -d -p 9091:9091 verisart latest

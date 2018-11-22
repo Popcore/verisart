@@ -12,11 +12,12 @@ import (
 	"goji.io/pat"
 
 	cert "github.com/popcore/verisart_exercise/pkg/certificate"
+	store "github.com/popcore/verisart_exercise/pkg/store"
 )
 
 func TestPostCertHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -38,7 +39,7 @@ func TestPostCertHandlerOK(t *testing.T) {
 
 func TestPostCertHandlerInvalidJSON(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -65,7 +66,7 @@ func TestPostCertHandlerInvalidJSON(t *testing.T) {
 
 func TestPostCertHandlerInvalidCert(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -88,7 +89,7 @@ func TestPostCertHandlerInvalidCert(t *testing.T) {
 
 func TestPostCertHandlerErrorNoUser(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -115,9 +116,9 @@ func TestPostCertHandlerErrorNoUser(t *testing.T) {
 
 func TestPatchCertHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 
-	toUpdate, err := memStore.Create(cert.Certificate{
+	toUpdate, err := memStore.CreateCert(cert.Certificate{
 		Title: "my cert",
 		Year:  2018,
 	})
@@ -144,9 +145,9 @@ func TestPatchCertHandlerOK(t *testing.T) {
 
 func TestPatchCertHandlerInvalidJSON(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 
-	toUpdate, err := memStore.Create(cert.Certificate{
+	toUpdate, err := memStore.CreateCert(cert.Certificate{
 		Title: "my cert",
 		Year:  2018,
 	})
@@ -169,7 +170,7 @@ func TestPatchCertHandlerInvalidJSON(t *testing.T) {
 
 func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
+	memStore := store.NewMemStore()
 
 	mux.Handle(pat.Patch("/certificates/:id"), Handler{S: memStore, H: PatchCertHandler})
 
@@ -189,10 +190,11 @@ func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 	mux.ServeHTTP(recorder, req)
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
 }
+
 func TestDeleteCertHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
-	toDelete, err := memStore.Create(cert.Certificate{
+	memStore := store.NewMemStore()
+	toDelete, err := memStore.CreateCert(cert.Certificate{
 		Title: "my cert",
 		Year:  2018,
 	})
@@ -209,53 +211,4 @@ func TestDeleteCertHandlerOK(t *testing.T) {
 
 	mux.ServeHTTP(recorder, req)
 	assert.Equal(t, http.StatusNoContent, recorder.Code)
-}
-
-func TestDeleteCertHandlerBadRequest(t *testing.T) {
-	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
-
-	mux.Handle(pat.Delete("/certificates/:id"), Handler{S: memStore, H: DeleteCertHandler})
-
-	req, err := http.NewRequest("DELETE", "/certificates/i-dont'exist", nil)
-
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-
-	mux.ServeHTTP(recorder, req)
-	assert.Equal(t, http.StatusNotFound, recorder.Code)
-}
-
-func TestListUserCertsHandlerOK(t *testing.T) {
-	mux := goji.NewMux()
-	memStore := cert.NewMemStore()
-	_, err := memStore.Create(cert.Certificate{
-		Title:   "my cert1",
-		OwnerID: "owner1",
-		Year:    2018,
-	})
-
-	_, err = memStore.Create(cert.Certificate{
-		Title:   "my cert2",
-		OwnerID: "owner1",
-		Year:    2018,
-	})
-
-	_, err = memStore.Create(cert.Certificate{
-		Title:   "my cert2",
-		OwnerID: "owner2",
-		Year:    2018,
-	})
-	assert.Nil(t, err)
-
-	mux.Handle(pat.Get("/users/:userId/certificates"), Handler{S: memStore, H: ListUserCertsHandler})
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("/users/%s/certificates", "owner1"), nil)
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-
-	mux.ServeHTTP(recorder, req)
-	assert.Equal(t, http.StatusOK, recorder.Code)
 }
