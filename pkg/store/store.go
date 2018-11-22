@@ -20,8 +20,8 @@ type Storer interface {
 }
 
 // MemStore is the in-memory concrete implementation of the storer interface.
-// Internally it holds two maps: one for storing certificates and one for
-// storing a list of transactions associated to certificate.
+// Internally it three maps: one for storing certificates, one for storing a
+// list of transactions associated to certificate and a map for users.
 type memStore struct {
 	Certs map[string]cert.Certificate
 	Txs   map[string][]cert.Transaction
@@ -31,9 +31,9 @@ type memStore struct {
 // NewMemStore returns a memStore instance.
 func NewMemStore() Storer {
 	return &memStore{
-		Certs: make(map[string]cert.Certificate),
-		Txs:   make(map[string][]cert.Transaction),
-		newUserStore(),
+		Certs:     make(map[string]cert.Certificate),
+		Txs:       make(map[string][]cert.Transaction),
+		userStore: newUserStore(),
 	}
 }
 
