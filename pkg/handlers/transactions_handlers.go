@@ -6,8 +6,8 @@ import (
 
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	store "github.com/popcore/verisart_exercise/pkg/store"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	store "github.com/popcore/verisart/pkg/store"
 )
 
 // PostTransferHandler deals with requests that attempt to

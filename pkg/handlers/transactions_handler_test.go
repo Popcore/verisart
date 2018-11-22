@@ -12,8 +12,8 @@ import (
 	"goji.io"
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	mocks "github.com/popcore/verisart_exercise/pkg/mocks"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	mocks "github.com/popcore/verisart/pkg/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

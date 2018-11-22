@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/popcore/verisart_exercise/pkg/server"
+	"github.com/popcore/verisart/pkg/server"
 )
 
 func main() {

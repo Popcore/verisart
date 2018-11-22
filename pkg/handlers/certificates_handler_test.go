@@ -11,8 +11,8 @@ import (
 	goji "goji.io"
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	store "github.com/popcore/verisart_exercise/pkg/store"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	store "github.com/popcore/verisart/pkg/store"
 )
 
 func TestPostCertHandlerOK(t *testing.T) {
@@ -199,7 +199,7 @@ func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	mux.ServeHTTP(recorder, req)
-	assert.Equal(t, http.StatusNotFound, recorder.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 }
 
 func TestDeleteCertHandlerOK(t *testing.T) {

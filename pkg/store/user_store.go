@@ -5,7 +5,7 @@ import (
 
 	"github.com/satori/go.uuid"
 
-	"github.com/popcore/verisart_exercise/pkg/users"
+	"github.com/popcore/verisart/pkg/users"
 )
 
 type userStore struct {

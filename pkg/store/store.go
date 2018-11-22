@@ -7,8 +7,8 @@ import (
 
 	"github.com/satori/go.uuid"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	"github.com/popcore/verisart_exercise/pkg/users"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	"github.com/popcore/verisart/pkg/users"
 )
 
 // Storer is the interface that defines CRUD operations allowed
@@ -71,9 +71,15 @@ func (m *memStore) UpdateCert(id string, c cert.Certificate) (*cert.Certificate,
 		return nil, errors.New("ownership can only be changed with a transfer")
 	}
 
-	m.Certs[id] = c
+	// updatable fields are title, year and notes.
+	// Id and createdAt should not be updated as ar generated as internal metadate
+	toUpdate.Title = c.Title
+	toUpdate.Year = c.Year
+	toUpdate.Note = c.Note
 
-	return &c, nil
+	m.Certs[id] = toUpdate
+
+	return &toUpdate, nil
 }
 
 // Delete modifies an existing certificate in the MemStore.

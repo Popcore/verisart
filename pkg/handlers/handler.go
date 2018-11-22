@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	store "github.com/popcore/verisart_exercise/pkg/store"
+	store "github.com/popcore/verisart/pkg/store"
 )
 
 type handler func(s store.Storer, w http.ResponseWriter, r *http.Request) *HTTPError

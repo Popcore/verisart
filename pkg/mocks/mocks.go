@@ -1,8 +1,8 @@
 package mocks
 
 import (
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	"github.com/popcore/verisart_exercise/pkg/users"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	"github.com/popcore/verisart/pkg/users"
 )
 
 // MockStore is a mock implementation of the Storer interface.MockStore

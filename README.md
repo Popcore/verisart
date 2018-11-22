@@ -9,6 +9,7 @@ The application is built according to the following principles:
 Not required but nice to have in case we need to retrieve the transaction history of a certificate.
 - The application uses email addresses as user identifiers. This is ok as we know that email addresses are unique. But it's not great that we are also using the same is to generate URLs.
 This should not be allowed in a production enviroment but it is accepted for demo purposes.
+- at present transaction can only be accepted. But the system is desgined to allow for rejection too.
 
 ## Build and Run the app
 If using Makefiles is not an option building and running the app be achieved by
@@ -76,12 +77,12 @@ Both example will return the user that was created or an error message. If all w
 2 - Now let's create one certificate for each user.
 One for Joe
 ```
-curl -H "Authorization: Bearer user1@email.com" -X POST -d '{"title": "cert1", "year": 1998, "note": "some notes"}' http://0.0.0.0:9091/certificates
+curl -H "X-User-Email: user1@email.com" -X POST -d '{"title": "cert1", "year": 1998, "note": "some notes"}' http://0.0.0.0:9091/certificates
 ```
 
 and one for Mary
 ```
-curl -H "Authorization: Bearer user2@email.com" -X POST -d '{"title": "cert2", "year": 2018, "note": "some other notes"}' http://0.0.0.0:9091/certificates
+curl -H "X-User-Email: user2@email.com" -X POST -d '{"title": "cert2", "year": 2018, "note": "some other notes"}' http://0.0.0.0:9091/certificates
 ```
 
 Both commands should return the certificate that was generated or an error.
@@ -98,6 +99,8 @@ If all went well the output should look something like
 }
 ```
 
+Please note the user of the `X-User-Email` header, which is required for authenticating the user. Not including the header will prodice an error.
+
 3 - We can see ou users' certificates with
 ```
 curl http://0.0.0.0:9091/users/<the-user-email-address>/certificates
@@ -113,11 +116,37 @@ Where the `<certificate-id>` should be replaced with one of the certificate Ids 
 
 5 - And finally to complete the transaction
 ```
-curl --request PATCH -d '{"email": "user2@email.com", "status": "accepted"}' http://0.0.0.0:9091/certificates/<certificate-id>/transfers
+curl -X PATCH -d '{"email": "user2@email.com", "status": "accepted"}' http://0.0.0.0:9091/certificates/<certificate-id>/transfers
 ```
 Where the `<certificate-id>` should be replaced with one of the certificate Ids that we saw in step 2.
 
 If no error was returned we can verify that the certificate was successfully transfered by repeting step 2. Joe should now have 0 certificates while Mary should have 2.
+
+### Updating certificates
+
+Existing certificates can be updated by specifying the fields that require updating.
+Note that attempting to update a transaction object will result in an error as transaction can only updated via the a certificate transfer.
+
+Method: PATCH
+Endpoint: certificates/<the-certificate-id>
+
+An example of updating a certificate could look like:
+```
+curl -X PATCH -d '{"title" : "my new shiny title", "year": 2018, "notes": "new notes" }' http://0.0.0.0:9091/certificates/<the-certificate-id>
+
+```
+
+### Deleting certificates
+Existing certificates can be also deleted. Once deleted certificates cannot be recovered.
+
+Method: DELETE
+Endpoint: certificates/<the-certificate-id>
+
+An example of updating a certificate could look like:
+```
+curl -X DELETE http://0.0.0.0:9091/certificates/<the-certificate-id>
+
+```
 
 ## Test the app
 To run unit testa and thir code coverage run
@@ -125,7 +154,11 @@ To run unit testa and thir code coverage run
 make test
 ```
 
+Running the above command will also generate code coverage, accessible as an HTML file in the /artefacts folder.
+
 ## TODO/Nice to have
 - user authentication
 - better error handling
+- CI for automated builds
+- logging and monitoring
 - A cli tool for allowing for runtime configuration

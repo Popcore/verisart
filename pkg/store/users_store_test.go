@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/popcore/verisart_exercise/pkg/users"
+	"github.com/popcore/verisart/pkg/users"
 )
 
 func TestNewUserStore(t *testing.T) {

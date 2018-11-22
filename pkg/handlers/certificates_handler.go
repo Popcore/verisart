@@ -6,8 +6,8 @@ import (
 
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	store "github.com/popcore/verisart_exercise/pkg/store"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	store "github.com/popcore/verisart/pkg/store"
 )
 
 // PostCertHandler accepts requests dealing with the creation of
@@ -75,7 +75,7 @@ func PatchCertHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *H
 	// update storer
 	updatedCert, err := s.UpdateCert(certID, toUpdate)
 	if err != nil {
-		return newHTTPError(http.StatusNotFound, err.Error())
+		return newHTTPError(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	// return new cert

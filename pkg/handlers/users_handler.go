@@ -6,9 +6,9 @@ import (
 
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart_exercise/pkg/certificate"
-	store "github.com/popcore/verisart_exercise/pkg/store"
-	users "github.com/popcore/verisart_exercise/pkg/users"
+	cert "github.com/popcore/verisart/pkg/certificate"
+	store "github.com/popcore/verisart/pkg/store"
+	users "github.com/popcore/verisart/pkg/users"
 )
 
 // ListUserCertsHandler accepts requests dealing with the removal of
