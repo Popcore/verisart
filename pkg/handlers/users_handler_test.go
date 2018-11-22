@@ -18,28 +18,31 @@ import (
 func TestListUserCertsHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+	memStore.NewUser("owner1@email.com", "joe blog")
+	memStore.NewUser("owner2@email.com", "miss smith")
+
 	_, err := memStore.CreateCert(cert.Certificate{
 		Title:   "my cert1",
-		OwnerID: "owner1",
+		OwnerID: "owner1@email.com",
 		Year:    2018,
 	})
 
 	_, err = memStore.CreateCert(cert.Certificate{
 		Title:   "my cert2",
-		OwnerID: "owner1",
+		OwnerID: "owner1@email.com",
 		Year:    2018,
 	})
 
 	_, err = memStore.CreateCert(cert.Certificate{
-		Title:   "my cert2",
-		OwnerID: "owner2",
+		Title:   "my cert3",
+		OwnerID: "owner2@email.com",
 		Year:    2018,
 	})
 	assert.Nil(t, err)
 
 	mux.Handle(pat.Get("/users/:userId/certificates"), Handler{S: memStore, H: ListUserCertsHandler})
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("/users/%s/certificates", "owner1"), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("/users/%s/certificates", "owner1@email.com"), nil)
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()

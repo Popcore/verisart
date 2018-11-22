@@ -46,6 +46,11 @@ func (m *memStore) CreateCert(c cert.Certificate) (*cert.Certificate, error) {
 		return nil, errors.New("The certificate cannot contain an ID before it is created")
 	}
 
+	// ensure user exists
+	if _, ok := m.Users[c.OwnerID]; !ok {
+		return nil, errors.New("The certificate must contain a valid user ID (aka email address). The email supplied did not match any user")
+	}
+
 	c.ID = uuid.NewV4().String()
 	c.CreatedAt = time.Now().UTC()
 	m.Certs[c.ID] = c
@@ -56,8 +61,14 @@ func (m *memStore) CreateCert(c cert.Certificate) (*cert.Certificate, error) {
 // Update modifies an existing certificate in the MemStore
 func (m *memStore) UpdateCert(id string, c cert.Certificate) (*cert.Certificate, error) {
 
-	if _, ok := m.Certs[id]; !ok {
+	toUpdate, ok := m.Certs[id]
+	if !ok {
 		return nil, errors.New("Certificate not found")
+	}
+
+	// reject changes to ownership or transactions
+	if (c.OwnerID != "" && c.OwnerID != toUpdate.OwnerID) || c.Transfer != toUpdate.Transfer {
+		return nil, errors.New("ownership can only be changed with a transfer")
 	}
 
 	m.Certs[id] = c
@@ -104,17 +115,19 @@ func (m *memStore) CreateTx(certID string, tx cert.Transaction) (*cert.Transacti
 		return nil, errors.New("certificate not found. Please use a valid ID")
 	}
 
+	// ensure the transaction recipient exists
+	if _, ok := m.Users[tx.To]; !ok {
+		return nil, errors.New("invalid transaction recipient. The email address did not match any known user")
+	}
+
 	// update certificate transfer status and add transaction to the list
 	// of existing ones and
 	if canCreateTransaction(m.Txs[certID]) {
 		tx.Status = cert.Pending
 
 		selectedCert.Transfer = &tx
-		_, err := m.UpdateCert(selectedCert.ID, selectedCert)
-		if err != nil {
-			return nil, err
-		}
 
+		m.Certs[certID] = selectedCert
 		m.Txs[certID] = append([]cert.Transaction{tx}, m.Txs[certID]...)
 
 		return &tx, nil
@@ -150,13 +163,10 @@ func (m *memStore) AcceptTx(certID string) error {
 
 	lastTx.Status = cert.Accepted
 	selectedCert.Transfer = lastTx
+	selectedCert.OwnerID = lastTx.To
 
 	//"we must also set the new user id now"
-	_, err = m.UpdateCert(selectedCert.ID, selectedCert)
-	if err != nil {
-		return err
-	}
-
+	m.Certs[certID] = selectedCert
 	m.Txs[certID][0] = *lastTx
 
 	return nil

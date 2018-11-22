@@ -16,8 +16,10 @@ import (
 )
 
 func TestPostCertHandlerOK(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+	memStore.NewUser("user@email.com", "joe blog")
+
+	mux := goji.NewMux()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -27,7 +29,7 @@ func TestPostCertHandlerOK(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("POST", "/certificates", strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("Authorization", "Bearer user@email.com")
 
 	assert.Nil(t, err)
 
@@ -38,8 +40,10 @@ func TestPostCertHandlerOK(t *testing.T) {
 }
 
 func TestPostCertHandlerInvalidJSON(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+	memStore.NewUser("user@email.com", "joe blog")
+
+	mux := goji.NewMux()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -48,7 +52,7 @@ func TestPostCertHandlerInvalidJSON(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("POST", "/certificates", strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("Authorization", "Bearer user@email.com")
 
 	assert.Nil(t, err)
 
@@ -65,8 +69,9 @@ func TestPostCertHandlerInvalidJSON(t *testing.T) {
 }
 
 func TestPostCertHandlerInvalidCert(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+
+	mux := goji.NewMux()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -88,8 +93,9 @@ func TestPostCertHandlerInvalidCert(t *testing.T) {
 }
 
 func TestPostCertHandlerErrorNoUser(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+
+	mux := goji.NewMux()
 	mux.Handle(pat.Post("/certificates"), Handler{S: memStore, H: PostCertHandler})
 
 	input := `{
@@ -115,15 +121,18 @@ func TestPostCertHandlerErrorNoUser(t *testing.T) {
 }
 
 func TestPatchCertHandlerOK(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+	_, err := memStore.NewUser("user@email.com", "joe blog")
+	assert.Nil(t, err)
 
 	toUpdate, err := memStore.CreateCert(cert.Certificate{
-		Title: "my cert",
-		Year:  2018,
+		OwnerID: "user@email.com",
+		Title:   "my cert",
+		Year:    2018,
 	})
 	assert.Nil(t, err)
 
+	mux := goji.NewMux()
 	mux.Handle(pat.Patch("/certificates/:id"), Handler{S: memStore, H: PatchCertHandler})
 
 	input := `{
@@ -133,7 +142,7 @@ func TestPatchCertHandlerOK(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("PATCH", fmt.Sprintf("/certificates/%s", toUpdate.ID), strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("Authorization", "Bearer user@email.com")
 
 	assert.Nil(t, err)
 
@@ -144,15 +153,17 @@ func TestPatchCertHandlerOK(t *testing.T) {
 }
 
 func TestPatchCertHandlerInvalidJSON(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+	memStore.NewUser("user@email.com", "joe blog")
 
 	toUpdate, err := memStore.CreateCert(cert.Certificate{
-		Title: "my cert",
-		Year:  2018,
+		OwnerID: "user@email.com",
+		Title:   "my cert",
+		Year:    2018,
 	})
 	assert.Nil(t, err)
 
+	mux := goji.NewMux()
 	mux.Handle(pat.Patch("/certificates/:id"), Handler{S: memStore, H: PatchCertHandler})
 
 	input := `this-is-not-valid-json`
@@ -169,9 +180,9 @@ func TestPatchCertHandlerInvalidJSON(t *testing.T) {
 }
 
 func TestPatchCertHandlerInvalidCertID(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
 
+	mux := goji.NewMux()
 	mux.Handle(pat.Patch("/certificates/:id"), Handler{S: memStore, H: PatchCertHandler})
 
 	input := `{
@@ -192,14 +203,17 @@ func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 }
 
 func TestDeleteCertHandlerOK(t *testing.T) {
-	mux := goji.NewMux()
 	memStore := store.NewMemStore()
+	memStore.NewUser("user@email.com", "joe blog")
+
 	toDelete, err := memStore.CreateCert(cert.Certificate{
-		Title: "my cert",
-		Year:  2018,
+		OwnerID: "user@email.com",
+		Title:   "my cert",
+		Year:    2018,
 	})
 	assert.Nil(t, err)
 
+	mux := goji.NewMux()
 	mux.Handle(pat.Delete("/certificates/:id"), Handler{S: memStore, H: DeleteCertHandler})
 
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("/certificates/%s", toDelete.ID), nil)

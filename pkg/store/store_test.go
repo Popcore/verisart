@@ -7,16 +7,24 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	cert "github.com/popcore/verisart_exercise/pkg/certificate"
+	"github.com/popcore/verisart_exercise/pkg/users"
 )
 
 func TestCreateNewCert(t *testing.T) {
 	mc := memStore{
-		Certs: map[string]cert.Certificate{},
+		Certs:     map[string]cert.Certificate{},
+		userStore: newUserStore(),
+	}
+
+	mc.Users["owner@email.com"] = users.User{
+		ID:    "the-user-id",
+		Email: "owner@email.com",
+		Name:  "foo bar",
 	}
 
 	mockCert := cert.Certificate{
 		Title:   "the-title",
-		OwnerID: "the-owner-id",
+		OwnerID: "owner@email.com",
 		Year:    2018,
 		Note:    "some-notes",
 	}
@@ -28,7 +36,7 @@ func TestCreateNewCert(t *testing.T) {
 	assert.NotNil(t, got.ID)
 	assert.Equal(t, got.Title, "the-title")
 	assert.NotNil(t, got.CreatedAt)
-	assert.Equal(t, got.OwnerID, "the-owner-id")
+	assert.Equal(t, got.OwnerID, "owner@email.com")
 	assert.Equal(t, got.Year, 2018)
 	assert.Equal(t, got.Note, "some-notes")
 	assert.Nil(t, got.Transfer)
@@ -56,26 +64,37 @@ func TestUpdateCert(t *testing.T) {
 		},
 	}
 
-	mockCert.OwnerID = "new-owner-id"
-	mockCert.Transfer = &cert.Transaction{
-		To:     "another-user",
-		Status: "pending",
+	toUpdate := cert.Certificate{
+		Title: "the-new-title",
+		Note:  "some-new-notes",
 	}
 
-	got, err := mc.UpdateCert("the-id", mockCert)
+	got, err := mc.UpdateCert("the-id", toUpdate)
 	assert.Nil(t, err)
-	assert.Equal(t, got.OwnerID, "new-owner-id")
-	assert.Equal(t, got.OwnerID, mockCert.OwnerID)
-	assert.Equal(t, got.Transfer, &cert.Transaction{
-		To:     "another-user",
-		Status: "pending",
-	})
-	assert.Equal(t, got.Transfer, mockCert.Transfer)
+	assert.Equal(t, got.Title, "the-new-title")
+	assert.Equal(t, got.Note, "some-new-notes")
 
 	// attempting to update a non existing certificate should return an error
 	got, err = mc.UpdateCert("i-dont-exists", mockCert)
 	assert.Nil(t, got)
 	assert.NotNil(t, err)
+
+	// attempting to change ownership should return an error
+	got, err = mc.UpdateCert("the-id", cert.Certificate{
+		OwnerID: "new-owner",
+	})
+	assert.NotNil(t, err)
+	assert.Equal(t, "ownership can only be changed with a transfer", err.Error())
+
+	// attempting to update the transaction should return an error
+	got, err = mc.UpdateCert("the-id", cert.Certificate{
+		Transfer: &cert.Transaction{
+			To:     "another-user@email.com",
+			Status: cert.Accepted,
+		},
+	})
+	assert.NotNil(t, err)
+	assert.Equal(t, "ownership can only be changed with a transfer", err.Error())
 }
 
 func TestDeleteCert(t *testing.T) {
@@ -148,7 +167,7 @@ func TestCreateTxOK(t *testing.T) {
 	mockCert := cert.Certificate{
 		ID:      "key1",
 		Title:   "the-title",
-		OwnerID: "the-owner-id",
+		OwnerID: "owner1@email.com",
 		Year:    2018,
 		Note:    "some-notes",
 	}
@@ -157,11 +176,15 @@ func TestCreateTxOK(t *testing.T) {
 		Certs: map[string]cert.Certificate{
 			"key1": mockCert,
 		},
-		Txs: map[string][]cert.Transaction{},
+		Txs:       map[string][]cert.Transaction{},
+		userStore: newUserStore(),
 	}
 
+	mc.NewUser("owner1@email.com", "joe blog")
+	mc.NewUser("owner2@email.com", "miss smith")
+
 	tx := cert.Transaction{
-		To: "another-user@email.com",
+		To: "owner2@email.com",
 	}
 
 	_, err := mc.CreateTx("i-dond-exist", tx)
@@ -170,7 +193,7 @@ func TestCreateTxOK(t *testing.T) {
 
 	got, err := mc.CreateTx("key1", tx)
 	expected := &cert.Transaction{
-		To:     "another-user@email.com",
+		To:     "owner2@email.com",
 		Status: cert.Pending,
 	}
 
@@ -184,11 +207,11 @@ func TestCreateTxErrorNoPendingTx(t *testing.T) {
 	mockCert := cert.Certificate{
 		ID:      "key1",
 		Title:   "the-title",
-		OwnerID: "the-owner-id",
+		OwnerID: "owner1@email.com",
 		Year:    2018,
 		Note:    "some-notes",
 		Transfer: &cert.Transaction{
-			To:     "another-user@email.com",
+			To:     "owner2@email.com",
 			Status: cert.Pending,
 		},
 	}
@@ -200,15 +223,20 @@ func TestCreateTxErrorNoPendingTx(t *testing.T) {
 		Txs: map[string][]cert.Transaction{
 			"key1": []cert.Transaction{
 				{
-					To:     "another-user@email.com",
+					To:     "owner2@email.com",
 					Status: cert.Pending,
 				},
 			},
 		},
+		userStore: newUserStore(),
 	}
 
+	mc.NewUser("owner1@email.com", "joe blog")
+	mc.NewUser("owner2@email.com", "miss smith")
+	mc.NewUser("owner3@email.com", "luke")
+
 	tx := cert.Transaction{
-		To: "new-user@email.com",
+		To: "owner3@email.com",
 	}
 
 	_, err := mc.CreateTx("key1", tx)
@@ -217,9 +245,9 @@ func TestCreateTxErrorNoPendingTx(t *testing.T) {
 
 	// ensure old values are unchanged
 	assert.Equal(t, mc.Certs["key1"].Transfer.Status, cert.Pending)
-	assert.Equal(t, mc.Certs["key1"].Transfer.To, "another-user@email.com")
+	assert.Equal(t, mc.Certs["key1"].Transfer.To, "owner2@email.com")
 	assert.Equal(t, mc.Txs["key1"][0].Status, cert.Pending)
-	assert.Equal(t, mc.Txs["key1"][0].To, "another-user@email.com")
+	assert.Equal(t, mc.Txs["key1"][0].To, "owner2@email.com")
 }
 
 func TestAcceptTx(t *testing.T) {
@@ -258,6 +286,8 @@ func TestAcceptTx(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, string(cert.Accepted), string(mc.Txs[certKey][0].Status))
 	assert.Equal(t, string(cert.Accepted), string(mc.Certs[certKey].Transfer.Status))
+
+	assert.Equal(t, "another-user@email.com", mc.Certs[certKey].OwnerID)
 }
 
 func TestAcceptTxErrorEmptyTx(t *testing.T) {
