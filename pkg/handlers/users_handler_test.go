@@ -1,17 +1,52 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"goji.io"
 	"goji.io/pat"
 
+	cert "github.com/popcore/verisart_exercise/pkg/certificate"
 	store "github.com/popcore/verisart_exercise/pkg/store"
-	"github.com/stretchr/testify/assert"
 )
+
+func TestListUserCertsHandlerOK(t *testing.T) {
+	mux := goji.NewMux()
+	memStore := store.NewMemStore()
+	_, err := memStore.CreateCert(cert.Certificate{
+		Title:   "my cert1",
+		OwnerID: "owner1",
+		Year:    2018,
+	})
+
+	_, err = memStore.CreateCert(cert.Certificate{
+		Title:   "my cert2",
+		OwnerID: "owner1",
+		Year:    2018,
+	})
+
+	_, err = memStore.CreateCert(cert.Certificate{
+		Title:   "my cert2",
+		OwnerID: "owner2",
+		Year:    2018,
+	})
+	assert.Nil(t, err)
+
+	mux.Handle(pat.Get("/users/:userId/certificates"), Handler{S: memStore, H: ListUserCertsHandler})
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/users/%s/certificates", "owner1"), nil)
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	mux.ServeHTTP(recorder, req)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+}
 
 func TestNewUserHandlerOK(t *testing.T) {
 	mux := goji.NewMux()

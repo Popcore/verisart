@@ -20,7 +20,7 @@ func PostTransferHandler(s store.Storer, w http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&txInfo)
 	if err != nil {
-		return newHTTPError(http.StatusInternalServerError, err.Error())
+		return newHTTPError(http.StatusBadRequest, "invalid json payload")
 	}
 
 	// attemp to update certificate transfer
@@ -34,7 +34,9 @@ func PostTransferHandler(s store.Storer, w http.ResponseWriter, r *http.Request)
 		return newHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
 	_, err = w.Write(resp)
 	if err != nil {
 		return newHTTPError(http.StatusInternalServerError, err.Error())
@@ -53,16 +55,16 @@ func PatchTransferHandler(s store.Storer, w http.ResponseWriter, r *http.Request
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&txInfo)
 	if err != nil {
-		return newHTTPError(http.StatusInternalServerError, err.Error())
+		return newHTTPError(http.StatusBadRequest, "invalid json payload")
 	}
 
 	if txInfo.Status != cert.Accepted {
-		return newHTTPError(http.StatusUnprocessableEntity, err.Error())
+		return newHTTPError(http.StatusUnprocessableEntity, "transaction status can only be set to 'accepted' for now")
 	}
 
 	trx, err := s.CreateTx(certID, txInfo)
 	if err != nil {
-		return newHTTPError(http.StatusBadRequest, err.Error())
+		return newHTTPError(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	resp, err := json.Marshal(trx)
@@ -70,7 +72,9 @@ func PatchTransferHandler(s store.Storer, w http.ResponseWriter, r *http.Request
 		return newHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 	_, err = w.Write(resp)
 	if err != nil {
 		return newHTTPError(http.StatusInternalServerError, err.Error())

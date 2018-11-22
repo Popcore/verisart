@@ -28,6 +28,7 @@ func ListUserCertsHandler(s store.Storer, w http.ResponseWriter, r *http.Request
 		return newHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	_, err = w.Write(resp)
@@ -64,6 +65,7 @@ func NewUserHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *HTT
 		return newHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
 	_, err = w.Write(jsonResp)

@@ -15,8 +15,6 @@ import (
 // new certificates
 func PostCertHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *HTTPError {
 
-	w.Header().Set("Content-Type", "application/json")
-
 	// parse payload
 	decoder := json.NewDecoder(r.Body)
 	newCert := cert.Certificate{}
@@ -49,6 +47,7 @@ func PostCertHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *HT
 		return newHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
 	_, err = w.Write(resp)
@@ -87,6 +86,7 @@ func PatchCertHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *H
 		return newHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	_, err = w.Write(resp)
