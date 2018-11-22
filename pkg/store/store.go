@@ -149,16 +149,16 @@ func canCreateTransaction(txs []cert.Transaction) bool {
 // AcceptTx sets a transaction status to "accepted" and updates the
 // corresponding certificate information. It returns an error in case
 // of failure.
-func (m *memStore) AcceptTx(certID string) error {
+func (m *memStore) AcceptTx(certID string) (*cert.Certificate, error) {
 	// ensure certificate exists
 	selectedCert, ok := m.Certs[certID]
 	if !ok {
-		return errors.New("certificate not found. Please use a valid ID")
+		return nil, errors.New("certificate not found. Please use a valid ID")
 	}
 
 	lastTx, err := getLastPendingTx(m.Txs[certID])
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	lastTx.Status = cert.Accepted
@@ -169,7 +169,7 @@ func (m *memStore) AcceptTx(certID string) error {
 	m.Certs[certID] = selectedCert
 	m.Txs[certID][0] = *lastTx
 
-	return nil
+	return &selectedCert, nil
 }
 
 // getLastPendingTx returns the last transaction if it exists and

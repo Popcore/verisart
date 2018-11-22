@@ -278,12 +278,13 @@ func TestAcceptTx(t *testing.T) {
 		},
 	}
 
-	err := mc.AcceptTx("i-don't-exist")
+	_, err := mc.AcceptTx("i-don't-exist")
 	assert.NotNil(t, err)
 	assert.Equal(t, "certificate not found. Please use a valid ID", err.Error())
 
-	err = mc.AcceptTx(certKey)
+	got, err := mc.AcceptTx(certKey)
 	assert.Nil(t, err)
+	assert.Equal(t, *got, mc.Certs[certKey])
 	assert.Equal(t, string(cert.Accepted), string(mc.Txs[certKey][0].Status))
 	assert.Equal(t, string(cert.Accepted), string(mc.Certs[certKey].Transfer.Status))
 
@@ -308,7 +309,7 @@ func TestAcceptTxErrorEmptyTx(t *testing.T) {
 		Txs: map[string][]cert.Transaction{},
 	}
 
-	err := mc.AcceptTx(certKey)
+	_, err := mc.AcceptTx(certKey)
 	assert.NotNil(t, err)
 	assert.Equal(t, "no transactions found", err.Error())
 }
@@ -341,7 +342,7 @@ func TestAcceptTxErrorNoPendingTx(t *testing.T) {
 		},
 	}
 
-	err := mc.AcceptTx(certKey)
+	_, err := mc.AcceptTx(certKey)
 	assert.NotNil(t, err)
 	assert.Equal(t, "no pending transactions found", err.Error())
 }

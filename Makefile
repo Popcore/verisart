@@ -19,13 +19,9 @@ test:
 .PHONY: docker_build
 docker_build:
 	@echo "==> builing docker image"
-ifdef tag
-	docker build --tag $(tag) .
-else
-	docker build --tag latest .
-endif
+	docker build --tag verisart .
 
 .PHONY: docker_run
 docker_run: docker_build
-	@echo "==> builing image and running docker container"
-	docker run --rm -d -p 9091:9091 verisart latest
+	@echo "==> building image and running docker container"
+	docker run --rm -d --name verisart_app -p 9091:9091 verisart latest

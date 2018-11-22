@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"goji.io/pat"
 
@@ -26,11 +25,10 @@ func PostCertHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *HT
 
 	// get user from header.
 	// Here we simply read it from the Authorization header.
-	userID := r.Header.Get("Authorization")
-	userID = strings.TrimPrefix(userID, "Bearer ")
+	userID := r.Header.Get("X-User-Email")
 
 	if userID == "" {
-		return newHTTPError(http.StatusUnprocessableEntity, "user must be set in the Authorization header")
+		return newHTTPError(http.StatusUnprocessableEntity, "user must be set in the X-User-Email header")
 	}
 
 	newCert.OwnerID = userID

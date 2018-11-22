@@ -29,7 +29,7 @@ func TestPostCertHandlerOK(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("POST", "/certificates", strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer user@email.com")
+	req.Header.Set("X-User-Email", "user@email.com")
 
 	assert.Nil(t, err)
 
@@ -52,7 +52,7 @@ func TestPostCertHandlerInvalidJSON(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("POST", "/certificates", strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer user@email.com")
+	req.Header.Set("X-User-Email", "user@email.com")
 
 	assert.Nil(t, err)
 
@@ -82,7 +82,7 @@ func TestPostCertHandlerInvalidCert(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("POST", "/certificates", strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("X-User-Email", "abc")
 
 	assert.Nil(t, err)
 
@@ -105,7 +105,7 @@ func TestPostCertHandlerErrorNoUser(t *testing.T) {
 	}`
 
 	expected := `{
-	  "error": "user must be set in the Authorization header",
+	  "error": "user must be set in the X-User-Email header",
 	  "httpStatus": 422
 	}
 	`
@@ -142,7 +142,7 @@ func TestPatchCertHandlerOK(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("PATCH", fmt.Sprintf("/certificates/%s", toUpdate.ID), strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer user@email.com")
+	req.Header.Set("X-User-Email", "user@email.com")
 
 	assert.Nil(t, err)
 
@@ -169,7 +169,7 @@ func TestPatchCertHandlerInvalidJSON(t *testing.T) {
 	input := `this-is-not-valid-json`
 
 	req, err := http.NewRequest("PATCH", fmt.Sprintf("/certificates/%s", toUpdate.ID), strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("X-User-Email", "abc")
 
 	assert.Nil(t, err)
 
@@ -192,7 +192,7 @@ func TestPatchCertHandlerInvalidCertID(t *testing.T) {
 	}`
 
 	req, err := http.NewRequest("PATCH", "/certificates/i-dont-exists", strings.NewReader(input))
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("X-User-Email", "abc")
 
 	assert.Nil(t, err)
 
@@ -217,7 +217,7 @@ func TestDeleteCertHandlerOK(t *testing.T) {
 	mux.Handle(pat.Delete("/certificates/:id"), Handler{S: memStore, H: DeleteCertHandler})
 
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("/certificates/%s", toDelete.ID), nil)
-	req.Header.Set("Authorization", "Bearer abc")
+	req.Header.Set("X-User-Email", "abc")
 
 	assert.Nil(t, err)
 

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"goji.io"
 	"goji.io/pat"
@@ -88,7 +89,7 @@ func TestPostTransferHandlerStoreError(t *testing.T) {
 	}`
 
 	expected := `{
-		"httpStatus": 400,
+		"httpStatus": 422,
 		"error": "some error"
 	}`
 
@@ -98,17 +99,26 @@ func TestPostTransferHandlerStoreError(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	mux.ServeHTTP(recorder, req)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 	assert.JSONEq(t, expected, recorder.Body.String())
 }
 
 func TestPatchTransferHandlerOK(t *testing.T) {
 	mux := goji.NewMux()
+	createdAt, _ := time.Parse(time.RFC3339, "2018-11-21T12:00:00Z")
+
 	memStore := mocks.MockStore{
 		Err: nil,
 		Tx: cert.Transaction{
 			To:     "user@email.com",
 			Status: "accepted",
+		},
+		Cert: cert.Certificate{
+			ID:        "123abc",
+			Title:     "the-cert-title",
+			OwnerID:   "user@email.com",
+			CreatedAt: createdAt,
+			Year:      2001,
 		},
 	}
 	mux.Handle(pat.Patch("/certificates/:id/transfers"), Handler{S: memStore, H: PatchTransferHandler})
@@ -119,8 +129,12 @@ func TestPatchTransferHandlerOK(t *testing.T) {
 	}`
 
 	expected := `{
-		"email": "user@email.com",
-		"status": "accepted"
+		"id": "123abc",
+		"title": "the-cert-title",
+		"ownerId": "user@email.com",
+		"year" : 2001,
+		"createdAt": "2018-11-21T12:00:00Z",
+		"transfer": null
 	}`
 
 	req, err := http.NewRequest("PATCH", fmt.Sprintf("/certificates/mock-id/transfers"), strings.NewReader(input))

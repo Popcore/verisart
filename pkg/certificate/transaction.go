@@ -32,5 +32,6 @@ type Transferer interface {
 	CreateTx(certID string, trx Transaction) (*Transaction, error)
 
 	// AcceptTx finalizes a certificate transaction to a new user.
-	AcceptTx(certID string) error
+	// If successiful it returns the updated certificate.
+	AcceptTx(certID string) (*Certificate, error)
 }

@@ -62,12 +62,12 @@ func (m MockStore) CreateTx(certID string, tx cert.Transaction) (*cert.Transacti
 }
 
 // AcceptTx mock
-func (m MockStore) AcceptTx(certID string) error {
+func (m MockStore) AcceptTx(certID string) (*cert.Certificate, error) {
 	if m.Err != nil {
-		return m.Err
+		return nil, m.Err
 	}
 
-	return nil
+	return &m.Cert, nil
 }
 
 // NewUser mock

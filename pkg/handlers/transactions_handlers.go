@@ -26,7 +26,7 @@ func PostTransferHandler(s store.Storer, w http.ResponseWriter, r *http.Request)
 	// attemp to update certificate transfer
 	trx, err := s.CreateTx(certID, txInfo)
 	if err != nil {
-		return newHTTPError(http.StatusBadRequest, err.Error())
+		return newHTTPError(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	resp, err := json.Marshal(trx)
@@ -62,7 +62,7 @@ func PatchTransferHandler(s store.Storer, w http.ResponseWriter, r *http.Request
 		return newHTTPError(http.StatusUnprocessableEntity, "transaction status can only be set to 'accepted' for now")
 	}
 
-	trx, err := s.CreateTx(certID, txInfo)
+	trx, err := s.AcceptTx(certID)
 	if err != nil {
 		return newHTTPError(http.StatusUnprocessableEntity, err.Error())
 	}

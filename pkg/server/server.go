@@ -31,7 +31,7 @@ func New(addr string) *Server {
 	mux.Handle(pat.Post("/certificates/:id/transfers"), handlers.Handler{S: memStore, H: handlers.PostTransferHandler})
 	mux.Handle(pat.Patch("/certificates/:id/transfers"), handlers.Handler{S: memStore, H: handlers.PatchTransferHandler})
 	mux.Handle(pat.Get("/users/:userId/certificates"), handlers.Handler{S: memStore, H: handlers.ListUserCertsHandler})
-	mux.Handle(pat.Post("/users/"), handlers.Handler{S: memStore, H: handlers.NewUserHandler})
+	mux.Handle(pat.Post("/users"), handlers.Handler{S: memStore, H: handlers.NewUserHandler})
 	// define cors policies
 	c := cors.New(
 		cors.Options{
