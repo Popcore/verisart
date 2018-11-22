@@ -9,9 +9,9 @@ import (
 
 type handler func(s store.Storer, w http.ResponseWriter, r *http.Request) *HTTPError
 
-// Handler responsible for handling http requests. It holds the actual function
-// that will be invoked as a request is receive and any other configuration
-// required by the handlers to perform the required actions.
+// Handler is responsible for handling http requests. It holds the actual function
+// that will be invoked as a request is received and any other configuration or
+// services required by the handlers.
 type Handler struct {
 	S store.Storer
 	H handler
