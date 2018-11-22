@@ -1,30 +1,31 @@
 # Verisart Exercise
 A REST API that allows users to create and exchanges certificates.
 
-## design
+## Desing Notes
 The application is built according to the following principles:
 - certificates can be created, edited and exchanged by existing users only.
 - no authentication is enforced apart from the above cases.
 - transactions are stored in a chronological order in the in memory store.
 Not required but nice to have in case we need to retrieve the transaction history of a certificate.
-- The application uses email addresses as user identifiers. This is ok as we know that email addresses are unique. But it's not great that we are also using the same is to generate URLs.
-This should not be allowed in a production enviroment but it is accepted for demo purposes.
+- the application uses email addresses as user identifiers. This is ok emails are guarnteed to be unique, but it has the disadvantage of using the same ids to generate URLs. This should not be allowed in a production enviroment but it is accepted for demo purposes.
 - at present transaction can only be accepted. But the system is desgined to allow for rejection too.
 
 ## Build and Run the app
-If using Makefiles is not an option building and running the app be achieved by
+After this repositry has been cloned or downloaded `cd` in the `verisart` directory and follow the steps below.
+The application can be built and run with and without docker.
 
 ### Without Docker
 Requirements:
-Golang
-Make
+-[Golang](https://golang.org/dl/)
+-[Make](https://www.gnu.org/software/make/manual/html_node/Introduction.html)
 
-the app can be build the app with
+the app can be build the app with the Make command
 ```
 make build
 ```
+This will generate an executable in the /build folder.
 
-and run
+and run with
 ```
 ./build/verisart
 ```
@@ -34,14 +35,14 @@ If using Makefiles is not an option building and running the app be achieved by
 go run main.go
 ```
 
-The above will start a new server port 9091.
+The above will start a new server on localhost at port `:9091`.
 
 ### With Docker
 Requirements:
-Docker > 17
-Make
+[Docker > 17](https://docs.docker.com/v17.12/install/)
+-[Make](https://www.gnu.org/software/make/manual/html_node/Introduction.html)
 
-the app can be build and run with a single command
+the app can be built and run with a single command
 ```
 make docker_run
 ```
@@ -54,9 +55,12 @@ docker build --tag verisart . && docker run --rm -d --name verisart_app -p 9091:
 The above will generate a docker image and container available at http://0.0.0.0:9091
 
 ## Quick Start
-For simplicity the example above use `curl`. The same can be achieved using similar tools.
+To quickly see and test how the app works and what functionalities it exposes follow the steps below.
+For simplicity the examples use `curl`, but the same result can be achieved using similar tools.
 
-1- The first thing to do in order to consume the api is to generate users.
+0 - Ensure the application is up and running.
+
+1- The first thing to do in order to consume the API is to generate users.
 ```
 # user 1
 curl -X POST -d '{"email": "user1@email.com", "name": "joe"}' http://0.0.0.0:9091/users
@@ -65,7 +69,7 @@ curl -X POST -d '{"email": "user1@email.com", "name": "joe"}' http://0.0.0.0:909
 curl -X POST -d '{"email": "user2@email.com", "name": "mary"}' http://0.0.0.0:9091/users
 ```
 
-Both example will return the user that was created or an error message. If all went well the output should look like
+Both commands will return the user that was created or an error message explaining what went wrong. If all went well the output should look like
 ```json
 {
   "id": "2b8ed671-8f1e-4246-83c3-c7b61425b291",
@@ -73,6 +77,7 @@ Both example will return the user that was created or an error message. If all w
   "name": "mary"
 }
 ```
+
 
 2 - Now let's create one certificate for each user.
 One for Joe
@@ -84,8 +89,9 @@ and one for Mary
 ```
 curl -H "X-User-Email: user2@email.com" -X POST -d '{"title": "cert2", "year": 2018, "note": "some other notes"}' http://0.0.0.0:9091/certificates
 ```
+Please note the user of the `X-User-Email` header, which is required for authenticating the user. Not including the header will prodice an error.
 
-Both commands should return the certificate that was generated or an error.
+Both commands should return the certificate that was generated or an error message explaining what went wrong.
 If all went well the output should look something like
 ```json
 {
@@ -99,20 +105,21 @@ If all went well the output should look something like
 }
 ```
 
-Please note the user of the `X-User-Email` header, which is required for authenticating the user. Not including the header will prodice an error.
 
-3 - We can see ou users' certificates with
+3 - We can see our users' certificates with
 ```
 curl http://0.0.0.0:9091/users/<the-user-email-address>/certificates
 ```
 where `<the-user-email-address>` should be replaced by either `user1@email.com` or `user2@email.com`,
+
 
 4 - A certificate transaction from Joe to Mary can be created with
 ```
 curl -X POST -d '{"email": "user2@email.com"}' http://0.0.0.0:9091/certificates/<certificate-id>/transfers
 ```
 
-Where the `<certificate-id>` should be replaced with one of the certificate Ids that we saw in step 2.
+where the `<certificate-id>` should be replaced with one of the certificate Ids that we saw in step 2.
+
 
 5 - And finally to complete the transaction
 ```
@@ -122,13 +129,44 @@ Where the `<certificate-id>` should be replaced with one of the certificate Ids 
 
 If no error was returned we can verify that the certificate was successfully transfered by repeting step 2. Joe should now have 0 certificates while Mary should have 2.
 
-### Updating certificates
+## API Endpoints
+The API returns and expects JSON payloads.
+It is the responsiblity of the API consumers to set their request content type accordingly.
 
+### Creating certificates
+certificates can be created by existing users.
+Requsts must include a `X-User-Email` header containing the certificate owner email address.
+
+Method: POST
+Endpoint: /certificates
+
+A request payload looks like:
+```json
+{
+  "title": "my new certificate",
+  "year": 2018,
+  "note": "some notes about my certificate"
+}
+```
+
+On success the application returns the cetificate that was created
+In case of an error the application will return an error containg the http status code and a message.
+
+### Updating certificates
 Existing certificates can be updated by specifying the fields that require updating.
 Note that attempting to update a transaction object will result in an error as transaction can only updated via the a certificate transfer.
 
 Method: PATCH
-Endpoint: certificates/<the-certificate-id>
+Endpoint: /certificates/<the-certificate-id>
+
+A request payload looks like:
+```json
+{
+  "title": "my new certificate title",
+  "year": 2018,
+  "note": "new notes about my certificate"
+}
+```
 
 An example of updating a certificate could look like:
 ```
@@ -136,11 +174,13 @@ curl -X PATCH -d '{"title" : "my new shiny title", "year": 2018, "notes": "new n
 
 ```
 
+Attempting to directly update the certificate ownerID or a transaction status will produce an error. Certificates ownershipcan only be updated using transactions.
+
 ### Deleting certificates
 Existing certificates can be also deleted. Once deleted certificates cannot be recovered.
 
 Method: DELETE
-Endpoint: certificates/<the-certificate-id>
+Endpoint: /certificates/<the-certificate-id>
 
 An example of updating a certificate could look like:
 ```
@@ -148,13 +188,83 @@ curl -X DELETE http://0.0.0.0:9091/certificates/<the-certificate-id>
 
 ```
 
+### Creating new users
+
+Method: POST
+Endpoint: /users
+
+On success the application returns the cetificate that was created
+In case of an error the application will return an error containg the http status code and a message.
+
+A request payload looks like:
+```json
+{
+  "email": "test@email.com",
+  "name": "test-user"
+}
+```
+
+The application will reponnd with a JSON bject representing the user that was generated.
+
+
+### Listing certificates for a user
+Certificates can be retrieved by specifying the owner ID in the URL.
+
+Method: GET
+Endpoint: /users/<userId>/certificates
+
+An example of updating a certificate could look like:
+```
+curl http://0.0.0.0:9091/users/<userId>/certificates
+
+```
+
+The application will reponnd with a JSON array containing the certificates that belong to a user.
+
+
+### Creating a new transaction
+
+Method: POST
+Endpoint: /certificates/:id/transfers
+
+A request payload looks like:
+```json
+{
+  "email": "user@email.com",
+  "status": "pending"
+}
+```
+
+Currently only the email address must be specfied as the application will automatically set the transaction status to "pending".
+
+The application will reponnd with a JSON object containing the certificates that belong to a user.
+Errors will be returned when trying the create a new trasaction for a certificate that already has a pending transaction.
+
+
+### Accepting a transaction
+Certificate ownership can be updated only after a transaction has been accepted.
+
+Method: PATCH
+Endpoint: /users/<userId>/certificates
+
+A request payload looks like:
+```json
+{
+  "email": "user@email.com",
+  "status": "accepted"
+}
+```
+
+The application will reponnd with a JSON array containing the updated certificate.
+
+
 ## Test the app
-To run unit testa and thir code coverage run
+The application codebase can be tested with
 ```
 make test
 ```
 
-Running the above command will also generate code coverage, accessible as an HTML file in the /artefacts folder.
+The above command will also generate code coverage, accessible as an HTML file in the /artefacts folder.
 
 ## TODO/Nice to have
 - user authentication

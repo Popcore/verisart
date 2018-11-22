@@ -11,8 +11,8 @@ import (
 	users "github.com/popcore/verisart/pkg/users"
 )
 
-// ListUserCertsHandler accepts requests dealing with the removal of
-// existing certificates.
+// ListUserCertsHandler accepts requests dealing with the listing of
+// certificates that belong to the user ID specified in the URL.
 func ListUserCertsHandler(s store.Storer, w http.ResponseWriter, r *http.Request) *HTTPError {
 	userID := pat.Param(r, "userId")
 
