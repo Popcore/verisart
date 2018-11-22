@@ -37,7 +37,7 @@ func New(addr string) *Server {
 		cors.Options{
 			AllowedOrigins: []string{"*"},
 			AllowedMethods: []string{"GET", "POST", "PATCH"},
-			AllowedHeaders: []string{"Authorization", "Content-Type"},
+			AllowedHeaders: []string{"Authorization", "Content-Type", "X-User-Email"}},
 		},
 	)
 	mux.Use(c.Handler)
