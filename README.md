@@ -263,6 +263,7 @@ make test
 The above command will also generate code coverage, accessible as an HTML file in the /artefacts folder.
 
 ## TODO/Nice to have
+- ensure reading and writing to the store is thread safe
 - user authentication
 - better error handling
 - CI for automated builds
