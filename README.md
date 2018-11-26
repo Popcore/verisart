@@ -11,7 +11,13 @@ Not required but nice to have in case we need to retrieve the transaction histor
 - at present transaction can only be accepted. But the system is desgined to allow for rejection too.
 
 ## Build and Run the app
-After this repositry has been cloned or downloaded `cd` in the `verisart` directory and follow the steps below.
+The easiest way to get download the application and its dependencies is via `go get`
+```
+go get -d github.com/popcore/verisart
+```
+which will create a copy of the application on yout GOPATH (without installing it). Alternatively this repository can be cloned or downloaded directly.
+
+After the repositry has been cloned or downloaded `cd` in the `verisart` directory and follow the steps below.
 The application can be built and run with and without docker.
 
 ### Without Docker
