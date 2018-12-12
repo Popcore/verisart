@@ -1,21 +1,21 @@
 # Verisart Exercise
 A REST API that allows users to create and exchanges certificates.
 
-## Desing Notes
+## Design Notes
 The application is built according to the following principles:
 - certificates can be created, edited and exchanged by existing users only.
 - no authentication is enforced apart from the above cases.
 - transactions are stored in a chronological order in the in memory store.
 Not required but nice to have in case we need to retrieve the transaction history of a certificate.
 - the application uses email addresses as user identifiers. This is ok emails are guarnteed to be unique, but it has the disadvantage of using the same ids to generate URLs. This should not be allowed in a production enviroment but it is accepted for demo purposes.
-- at present transaction can only be accepted. But the system is desgined to allow for rejection too.
+- at present transaction can only be accepted. But the system is designed to allow for rejection too.
 
 ## Build and Run the app
 The easiest way to get download the application and its dependencies is via `go get`
 ```
 go get -d github.com/popcore/verisart
 ```
-which will create a copy of the application on yout GOPATH (without installing it). Alternatively this repository can be cloned or downloaded directly.
+which will create a copy of the application on your GOPATH (without installing it). Alternatively this repository can be cloned or downloaded directly.
 
 After the repositry has been cloned or downloaded `cd` in the `verisart` directory and follow the steps below.
 The application can be built and run with and without docker.
@@ -28,7 +28,7 @@ Requirements:
 ```
 make build
 ```
-Wll generate an executable in the /build folder.
+Will generate an executable in the /build folder.
 The executable ca be run with
 ```
 ./build/verisart
@@ -92,7 +92,7 @@ and one for Mary
 ```
 curl -H "X-User-Email: user2@email.com" -X POST -d '{"title": "cert2", "year": 2018, "note": "some other notes"}' http://0.0.0.0:9091/certificates
 ```
-Please note the user of the `X-User-Email` header, which is required for authenticating the user. Not including the header will prodice an error.
+Please note the user of the `X-User-Email` header, which is required for authenticating the user. Not including the header will produce an error.
 
 Both commands should return the certificate that was generated or an error message explaining what went wrong.
 If all went well the output should look something like
@@ -130,7 +130,7 @@ curl -X PATCH -d '{"email": "user2@email.com", "status": "accepted"}' http://0.0
 ```
 Where the `<certificate-id>` should be replaced with one of the certificate Ids that we saw in step 2.
 
-If no error was returned we can verify that the certificate was successfully transfered by repeting step 2. Joe should now have 0 certificates while Mary should have 2.
+If no error was returned we can verify that the certificate was successfully transferred by repeating step 2. Joe should now have 0 certificates while Mary should have 2.
 
 ## API Endpoints
 The API expected content type is JSON.
@@ -152,11 +152,11 @@ A request payload looks like:
 ```
 
 On success the application returns the cetificate that was created.
-In case of an error the application will return an error containg the http status code and a message.
+In case of an error the application will return an error containing the http status code and a message.
 
 ### Updating certificates
 Existing certificates can be updated by specifying the fields that needs to be modified.
-Note that attempting to update a transaction object will result in an error as transaction can only updated via the a certificate transfer.
+Note that attempting to update a transaction object will result in an error as transaction can only updated via a certificate transfer.
 
 Method: PATCH
 Endpoint: /certificates/<the-certificate-id>
@@ -221,7 +221,7 @@ curl http://0.0.0.0:9091/users/<userId>/certificates
 
 ```
 
-The application will reponnd with a JSON array containing the certificates that belong to a user.
+The application will respond with a JSON array containing the certificates that belong to a user.
 
 
 ### Creating a new transaction
@@ -239,8 +239,8 @@ A request payload looks like:
 
 Currently only the email address can be specified as the application will automatically set the transaction status to "pending".
 
-The application will reponnd with a JSON object containing the certificates that belong to a user.
-Errors will be returned when trying the create a new trasaction for a certificate that already has a pending transaction.
+The application will respond with a JSON object containing the certificates that belong to a user.
+Errors will be returned when trying to create a new trasaction for a certificate that already has a pending transaction.
 
 
 ### Accepting a transaction
@@ -257,7 +257,7 @@ A request payload looks like:
 }
 ```
 
-The application will reponnd with a JSON array containing the updated certificate.
+The application will respond with a JSON array containing the updated certificate.
 
 
 ## Test the app
