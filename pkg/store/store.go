@@ -7,21 +7,21 @@ import (
 
 	"github.com/satori/go.uuid"
 
-	cert "github.com/popcore/verisart/pkg/certificate"
-	"github.com/popcore/verisart/pkg/users"
+	cert "github.com/Popcore/verisart/pkg/certificate"
+	"github.com/Popcore/verisart/pkg/users"
 )
 
 // Storer is the interface that defines CRUD operations allowed
-// on certificate, transactions and users.
+// on certificates, transactions and users.
 type Storer interface {
 	users.UserManager
-	cert.CertManger
+	cert.CertManager
 	cert.Transferer
 }
 
 // MemStore is the in-memory concrete implementation of the storer interface.
-// Internally it three maps: one for storing certificates, one for storing a
-// list of transactions associated to certificate and a map for users.
+// Internally it holds three maps: one for storing certificates, one for storing a
+// list of transactions associated to certificates and a map for users.
 type memStore struct {
 	Certs map[string]cert.Certificate
 	Txs   map[string][]cert.Transaction
@@ -40,8 +40,8 @@ func NewMemStore() Storer {
 // Create adds a new certificate to the MemStore.
 func (m *memStore) CreateCert(c cert.Certificate) (*cert.Certificate, error) {
 
-	// return error if the Certificate already includes and id.
-	// Ensure user knows what he/she is doing
+	// return error if the Certificate already includes and id since id are created by
+	// the applcation
 	if c.ID != "" {
 		return nil, errors.New("The certificate cannot contain an ID before it is created")
 	}
@@ -72,7 +72,7 @@ func (m *memStore) UpdateCert(id string, c cert.Certificate) (*cert.Certificate,
 	}
 
 	// updatable fields are title, year and notes.
-	// Id and createdAt should not be updated as ar generated as internal metadate
+	// Id and createdAt should not be updated as are generated as internal metadata
 	toUpdate.Title = c.Title
 	toUpdate.Year = c.Year
 	toUpdate.Note = c.Note

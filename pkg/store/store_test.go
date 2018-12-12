@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	cert "github.com/popcore/verisart/pkg/certificate"
-	"github.com/popcore/verisart/pkg/users"
+	cert "github.com/Popcore/verisart/pkg/certificate"
+	"github.com/Popcore/verisart/pkg/users"
 )
 
 func TestCreateNewCert(t *testing.T) {

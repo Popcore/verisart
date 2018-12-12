@@ -8,8 +8,8 @@ import (
 	"goji.io"
 	"goji.io/pat"
 
-	"github.com/popcore/verisart/pkg/handlers"
-	store "github.com/popcore/verisart/pkg/store"
+	"github.com/Popcore/verisart/pkg/handlers"
+	store "github.com/Popcore/verisart/pkg/store"
 )
 
 // Server is a custom type used to group server configuration,

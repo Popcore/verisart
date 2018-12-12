@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"goji.io"
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart/pkg/certificate"
-	mocks "github.com/popcore/verisart/pkg/mocks"
-	"github.com/stretchr/testify/assert"
+	cert "github.com/Popcore/verisart/pkg/certificate"
+	mocks "github.com/Popcore/verisart/pkg/mocks"
 )
 
 func TestPostTransferHandlerOK(t *testing.T) {

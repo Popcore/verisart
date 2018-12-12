@@ -11,8 +11,8 @@ import (
 	goji "goji.io"
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart/pkg/certificate"
-	store "github.com/popcore/verisart/pkg/store"
+	cert "github.com/Popcore/verisart/pkg/certificate"
+	store "github.com/Popcore/verisart/pkg/store"
 )
 
 func TestPostCertHandlerOK(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Certificate is a type that represents an artwork certificate.
+// Certificate represents an artwork certificate.
 // It contains information about its name, provenance, status etc.
 type Certificate struct {
 	ID        string       `json:"id"`
@@ -16,7 +16,7 @@ type Certificate struct {
 	Transfer  *Transaction `json:"transfer"`
 }
 
-type CertManger interface {
+type CertManager interface {
 	// CreateCert adds a new Certificate to the store. It returns the generated
 	// certificate or an error if anything goes wrong.
 	CreateCert(c Certificate) (*Certificate, error)

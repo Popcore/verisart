@@ -5,7 +5,7 @@ import (
 
 	"github.com/satori/go.uuid"
 
-	"github.com/popcore/verisart/pkg/users"
+	"github.com/Popcore/verisart/pkg/users"
 )
 
 type userStore struct {
@@ -18,7 +18,7 @@ func newUserStore() userStore {
 	}
 }
 
-// NewUser adds a new user to the momStore
+// NewUser adds a new user to the Store
 func (s *userStore) NewUser(email string, name string) (*users.User, error) {
 	if _, ok := s.Users[email]; ok {
 		return nil, errors.New("a user with the same email address already exists")

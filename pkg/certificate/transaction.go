@@ -1,6 +1,6 @@
 package certificate
 
-// Transaction is a type that represents a certificate transaction
+// Transaction represents a certificate transaction
 // from one uer to another.
 type Transaction struct {
 	To     string         `json:"email"`
@@ -23,7 +23,7 @@ const (
 	Rejected transferStatus = "rejected"
 )
 
-// Transferer s the interface that represents operations on certificate
+// Transferer is the interface tht defines operations on certificate
 // transactions.
 type Transferer interface {
 

@@ -6,8 +6,8 @@ import (
 
 	"goji.io/pat"
 
-	cert "github.com/popcore/verisart/pkg/certificate"
-	store "github.com/popcore/verisart/pkg/store"
+	cert "github.com/Popcore/verisart/pkg/certificate"
+	store "github.com/Popcore/verisart/pkg/store"
 )
 
 // PostCertHandler accepts requests dealing with the creation of
