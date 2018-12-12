@@ -13,7 +13,7 @@ Not required but nice to have in case we need to retrieve the transaction histor
 ## Build and Run the app
 The easiest way to get download the application and its dependencies is via `go get`
 ```
-go get -d github.com/popcore/verisart
+go get -d github.com/Popcore/verisart
 ```
 which will create a copy of the application on your GOPATH (without installing it). Alternatively this repository can be cloned or downloaded directly.
 
